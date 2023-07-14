@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>WhatsApp</title>
+
+</head>
+
+<body>
+  <h1>WhatsApp</h1>
+  <div class="messages-container">
+    <div id="messages"></div>
+  </div>
+  <div class="form-container">
+    <input type="text" id="number" placeholder="Phone Number">
+    <input type="text" id="text" placeholder="Message">
+    <button id="sendBtn">Send</button>
+  </div>
+
+  <script>
+    const messagesContainer = document.getElementById('messages');
+    const sendBtn = document.getElementById('sendBtn');
+    const numberInput = document.getElementById('number');
+    const textInput = document.getElementById('text');
+
+    // Function to display a new message in the messages container
+    function displayMessage(message) {
+      const messageElement = document.createElement('div');
+      messageElement.textContent = message;
+      messagesContainer.appendChild(messageElement);
+    }
+
+    // Event listener for the Send button
+    sendBtn.addEventListener('click', () => {
+      const number = numberInput.value;
+      const text = textInput.value;
+
+      // Send a POST request to the server to send the message
+      fetch('/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ number, text })
+      })
+        .then(response => response.json())
+        .then(result => {
+          // Display the result message in the messages container
+          displayMessage(result.success);
+        })
+        .catch(error => {
+          console.error('Error sending message:', error);
+        });
+
+      // Clear the input fields after sending the message
+      numberInput.value = '';
+      textInput.value = '';
+    });
+
+  </script>
+
+</body>
+
+</html>
