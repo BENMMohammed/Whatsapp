@@ -49,34 +49,47 @@ client.on('message', async message => {
   }
 });
 
+/*
+async function redirectToIndex() {
+  if (isClientReady) {
+      app.use(express.static(__dirname));
+      res.sendFile(__dirname + '/index.html');
+      console.log('ok');
+  }
+}
+*/
+
+//app.use('/',redirectToIndex);
+
 client.initialize();
 
 
 app.get('/', async (req, res) => {
   if (isClientReady) {
-    res.sendFile(__dirname +'/index.html');
+    app.use(express.static(__dirname));
+    res.sendFile(__dirname + '/index.html');
   } else {
-    res.sendFile(__dirname +'/qrcodepage.html');
-    //await res.send(`<img src="${qrCodeUrl}" alt="QR Code" />`);
+    res.send(`
+    <h1>Scan The QrCode</h1>
+    <img src="${qrCodeUrl}" alt="QR Code" />
+    <script>
+      setTimeout(() => {
+        location.reload();
+      }, 2000);
+    </script>
+  `);
+    //res.send(`<img src="${qrCodeUrl}" alt="QR Code" />`);
   }
 });
 
-app.get('/sendqrcode', (req, res) => {
-  const url = qrCodeUrl; // Replace with your URL
-  res.status(200).json({ url });
-});
-
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  
 });
 
 function isURL(message) {
   const urlRegex = /^(http(s)?:\/\/)?[\w.-]+\.[a-zA-Z]{2,}(\/.*)?$/;
   return urlRegex.test(message);
 }
-
 
 app.post('/send', async (req, res) => {
   const { number, text } = req.body;
@@ -88,11 +101,10 @@ app.post('/send', async (req, res) => {
       const media = await MessageMedia.fromUrl(text);
       await client.sendMessage(`${number}@c.us`, media);
       res.status(200).json({ success: 'Image sent' });
-    }
-    else {
+    } else {
       await client.sendMessage(`${number}@c.us`, text);
       console.log(`Message sent to ${number}: ${text}`);
-      res.status(200).json({ success: 'Message sent'});
+      res.status(200).json({ success: 'Message sent' });
     }
   } catch (error) {
     console.error('Error sending message:', error);
